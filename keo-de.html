@@ -1137,8 +1137,15 @@ async function initCloud(){
     db=firebase.firestore();
     db.collection('verifications').onSnapshot(s=>{CLOUD_VERIFIED={};s.forEach(d=>{CLOUD_VERIFIED[d.id]=d.data()||{};});if(MODE==='cloud')renderAll();});
     db.collection('venues').onSnapshot(s=>{
+      const docs=s.docs.map(d=>Object.assign({id:d.id},d.data()));
       if(!s.empty){
-        PARTNERS=s.docs.map(d=>Object.assign({id:d.id},d.data()));
+        /* đẩy bù: quán có trên máy này mà cloud chưa có (theo tên) — admin đăng nhập mới đẩy được */
+        const names=new Set(docs.map(d=>d.data().name));
+        const extras=PARTNERS.filter(p=>p.name&&!names.has(p.name));
+        if(extras.length&&firebase.auth()&&firebase.auth().currentUser){
+          extras.forEach(p=>{const{id,...data}=p;db.collection('venues').doc(String(p.id)||('p'+Date.now())).set(data).catch(()=>{});});
+        }
+        PARTNERS=docs.concat(extras);
         renderPartnerStrip();renderVenues();
       }else if(!venueSeeded){
         venueSeeded=true;
