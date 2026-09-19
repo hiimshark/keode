@@ -1415,13 +1415,13 @@ async function toggleJoin(id){
   const i=p.joined.findIndex(m=>m.uid===session.id);
   const member={uid:session.id,name:profile.name,color:profile.color,picture:profile.picture||'',rating:'0.0'};
   if(i>0){
-    if(MODE==='cloud'){try{await db.collection('keos').doc(String(id)).update({joined:firebase.firestore.FieldValue.arrayRemove(p.joined[i])});}catch(e){toast('Lỗi cloud: '+e.message);return;}}
+    if(MODE==='cloud'){try{await db.collection('keos').doc(String(id)).update({joined:p.joined.filter((_,idx)=>idx!==i)});}catch(e){toast('Lỗi cloud: '+e.message);return;}}
     else{p.joined.splice(i,1);save('keode.posts.v2',KEO);}
     toast('Đã huỷ yêu cầu tham gia.');
   }else if(i===0){toast('Bạn là chủ kèo này mà!');return;}
   else{
     if(p.joined.length>=p.total){toast('Kèo đã đủ người rồi — hẹn kèo khác nhé!');return;}
-    if(MODE==='cloud'){try{await db.collection('keos').doc(String(id)).update({joined:firebase.firestore.FieldValue.arrayUnion(member)});}catch(e){toast('Lỗi cloud: '+e.message);return;}}
+    if(MODE==='cloud'){try{await db.collection('keos').doc(String(id)).update({joined:[...p.joined,member]});}catch(e){toast('Lỗi cloud: '+e.message);return;}}
     else{p.joined.push(member);save('keode.posts.v2',KEO);}
     toast('Đã xin tham gia! Chờ chủ kèo duyệt nhé.');
   }
