@@ -2291,7 +2291,7 @@ renderOnboard();
 applyRoute();
 /* đồng hồ đếm ngược: cập nhật mỗi phút */
 setInterval(()=>{
-  const h=(location.hash||'#discover').slice(1);
+  const h=(location.hash||'#discover').slice(1).toLowerCase(); // #ADMIN hay #Admin cũng vào được
   if(h.startsWith('keo/')&&currentKeoId)openDetail(currentKeoId);
   else if(h==='discover'){renderFeed();}
 },60000);
