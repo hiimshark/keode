@@ -1,5 +1,5 @@
 rules_version = '2';
-// KÈO ĐÊ — Firestore security rules v2 (sửa lỗi join + hỗ trợ admin)
+// KÈO ĐÊ — Firestore security rules v3 (fix join: total đọc từ resource.data)
 // Dán vào: Firebase Console → Firestore Database → Rules → Publish
 service cloud.firestore {
 
@@ -31,7 +31,7 @@ service cloud.firestore {
           && request.resource.data.members.filter(m, m.uid == request.auth.uid).size() <= 1
           && resource.data.members.filter(m, m.uid == request.auth.uid).size() <= 1
           && request.resource.data.members.filter(m, m.uid == resource.data.hostUid).size() == 1
-          && request.resource.data.members.size() <= request.resource.data.total)
+          && request.resource.data.members.size() <= resource.data.total)
         || request.auth.uid == resource.data.hostUid
         || isAdmin()
       );
