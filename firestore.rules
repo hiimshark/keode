@@ -1,5 +1,5 @@
 rules_version = '2';
-// KÈO ĐÊ — Firestore security rules v3 (fix join: total đọc từ resource.data)
+// KÈO ĐÊ — Firestore security rules v4 (fix: field members → joined khớp app)
 // Dán vào: Firebase Console → Firestore Database → Rules → Publish
 service cloud.firestore {
 
@@ -27,11 +27,11 @@ service cloud.firestore {
       // host không bị mất khỏi members, không vượt tổng số chỗ.
       // Chủ kèo và admin được sửa toàn bộ kèo.
       allow update: if request.auth != null && (
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'updatedAt'])
-          && request.resource.data.members.filter(m, m.uid == request.auth.uid).size() <= 1
-          && resource.data.members.filter(m, m.uid == request.auth.uid).size() <= 1
-          && request.resource.data.members.filter(m, m.uid == resource.data.hostUid).size() == 1
-          && request.resource.data.members.size() <= resource.data.total)
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joined', 'updatedAt'])
+          && request.resource.data.joined.filter(m, m.uid == request.auth.uid).size() <= 1
+          && resource.data.joined.filter(m, m.uid == request.auth.uid).size() <= 1
+          && request.resource.data.joined.filter(m, m.uid == resource.data.hostUid).size() == 1
+          && request.resource.data.joined.size() <= resource.data.total)
         || request.auth.uid == resource.data.hostUid
         || isAdmin()
       );

@@ -15,6 +15,7 @@ async function scan(w, hgt, tag) {
 
   // login bằng email test + onboarding nhanh qua seed
   await p.goto(URL, { waitUntil: 'networkidle' });
+  await p.addStyleTag({ content: '#nl-badge-frame,[data-nl-ready]{display:none!important}' });
   await p.evaluate(() => localStorage.clear());
   await p.fill('#regName', 'Mobile ' + tag);
   await p.fill('#regEmail', `mob-${tag}-${uid}@keo.vn`);

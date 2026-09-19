@@ -5,6 +5,7 @@ const uid = Date.now();
 const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 const p = await ctx.newPage();
 await p.goto('https://keode.netlify.app/', { waitUntil: 'networkidle' });
+await p.addStyleTag({ content: '#nl-badge-frame,[data-nl-ready]{display:none!important}' });
 await p.evaluate(() => localStorage.clear());
 await p.fill('#regName', 'Rect Probe');
 await p.fill('#regEmail', `rect-${uid}@keo.vn`);
