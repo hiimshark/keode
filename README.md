@@ -1,3 +1,5 @@
+# KÈO ĐÊ — LIVE: https://keode.netlify.app
+
 # KÈO ĐÊ — prototype · v0.9 (cokeo-style · Tài khoản email · Xác minh CCCD · ADMIN PANEL · Cloud · OTP)
 
 Giao diện hiện đại theo cokeo.vn (user chọn): nền sáng, card trắng bo tròn, accent xanh #2E5BE8, avatar tròn, icon emoji pastel, font Baloo 2 + Be Vietnam Pro. Bản đồ SVG biên giới TP.HCM thật (ADM1).

@@ -16,7 +16,7 @@ Muốn đi cà phê, nhậu, đá banh, xem phim mà lưới group nửa tiếng
 
 Đăng nhập bằng Google/Facebook là đi kèo được liền — **không cần cài app, mở link là xài.**
 
-🔗 Đi kèo ngay: [link web]
+🔗 Đi kèo ngay: https://keode.netlify.app
 📞 Quán muốn lên sóng đề xuất? FB: SharkHunter01 · Zalo: 0328206839
 
 #KeoDe #SaiGon #RuaNhauDiKeo #DiDau #CafeSaiGon #DaBanh #QuanNgon
@@ -27,7 +27,7 @@ Muốn đi cà phê, nhậu, đá banh, xem phim mà lưới group nửa tiếng
 
 🍻 KÈO ĐÊ — rủ nhau đi kèo tại Sài Gòn: cà phê, nhậu, đá banh, xem phim, karaoke…
 Tạo kèo 30 giây, ai hợp gu "xin tham gia" 1 chạm. An toàn 18+, kèo khuya có cảnh báo riêng.
-Mở link là xài, không cần cài app 🔗 [link web] — Quán liên kết: Zalo 0328206839
+Mở link là xài, không cần cài app 🔗 https://keode.netlify.app — Quán liên kết: Zalo 0328206839
 
 ---
 
