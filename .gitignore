@@ -1,0 +1,8 @@
+# Local cache / temp
+assets/_probe*
+assets/_test-*.png
+*.log
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.kilo/
