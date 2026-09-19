@@ -491,7 +491,19 @@ b,strong{font-weight:700}
         <button type="button" class="linklike" id="cfgToggle">⚙️ Cấu hình đăng nhập thật (làm 1 lần)</button>
         <button type="button" class="linklike" id="demoLink">Chưa có ID? Xem thử demo →</button>
       </div>
-      <div id="cfgPanel" class="cfgpanel hide">
+      <div class="regbox">
+        <div class="phsep">— hoặc tạo tài khoản / đăng nhập bằng email —</div>
+        <input id="regName" maxlength="40" placeholder="Tên hiển thị (vd: Lê Hoàng Vũ)">
+        <input id="regEmail" inputmode="email" autocomplete="email" placeholder="Email">
+        <input id="regPass" type="password" autocomplete="current-password" placeholder="Mật khẩu (tối thiểu 6 ký tự)">
+        <p class="err hide" id="regErr"></p>
+        <div style="display:flex;gap:8px">
+          <button id="regBtn" class="btn btn-p" type="button" style="flex:1">Tạo tài khoản</button>
+          <button id="regSwitch" class="btn" type="button">Đã có tài khoản? Đăng nhập</button>
+        </div>
+        <p class="lsmall" style="margin-top:8px">Chưa cần CCCD lúc đăng ký — xác minh danh tính làm sau trong app, tuỳ bạn.</p>
+      </div>
+            <div id="cfgPanel" class="cfgpanel hide">
         <p class="cfgtitle"><b>Bật đăng nhập thật bằng Firebase — làm 1 lần duy nhất (~5 phút, copy-paste)</b></p>
         <ol>
           <li>Vào <b>console.firebase.google.com</b> → <b>Add project</b> → đặt tên (vd: keode) → Create (tắt Analytics cho lẹ).</li>
