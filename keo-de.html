@@ -1039,7 +1039,7 @@ const AVCOLORS=['#2E5BE8','#F43F6B','#FFB020','#8B5CF6','#14B8A6','#EC4899','#22
 let FB=window.KEO_FIREBASE_CONFIG||load('keode.firebase.v1',null);
 let session=load('keode.session.v1',null);
 let MODE='local',CLOUD_KEO=[],db=null,cloudConnecting=false,confirmResult=null,venueSeeded=false;
-const ADMIN_NAMES=['Lê Hoàng Vũ']; // production: dùng custom claim admin trên Firebase, không so tên
+const ADMIN_UID='mFbMQbKE5jhCR83aYBbSknoHdT42'; // UID admin trong rules — khớp mới có quyền toàn quyền cloud
 let adminS=load('keode.admin.v1',null);
 function hashStr(s){let x=0x811c9dc5;for(let i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,0x01000193)>>>0;}let y=0x01000193;for(let i=s.length-1;i>=0;i--){y^=s.charCodeAt(i)+i;y=Math.imul(y,0x85ebca6b)>>>0;}return 'v1.'+x.toString(36)+'.'+y.toString(36);}
 let adminPass=load('keode.adminpass.v1',null)||hashStr('admin123');
@@ -1074,7 +1074,7 @@ function updateKycBanner(){
   else{b.innerHTML='<p>⚠ Tài khoản CHƯA XÁC MINH — vẫn tìm & đăng kèo bình thường, nhưng xác minh CCCD giúp anh em tin nhau hơn.</p><button class="btn btn-sm btn-p" type="button" id="kybOpen">🪪 Xác minh ngay</button>';}
   const o=$('#kybOpen');if(o)o.addEventListener('click',()=>{openKyc();});
 }
-function isAdmin(){return !!(adminS&&adminS.role==='admin')||!!(profile&&ADMIN_NAMES.includes(profile.name));}
+function isAdmin(){return !!(adminS&&adminS.role==='admin')||!!(session&&session.id===ADMIN_UID);}
 function allKeo(){return MODE==='cloud'?CLOUD_KEO:KEO;}
 function isHostOf(p){return !!(session&&p.joined[0]&&p.joined[0].uid===session.id);}
 function isExpired(p){return !!(p.expiresAt&&Date.now()>p.expiresAt);}
@@ -2256,6 +2256,8 @@ $('#uchip').addEventListener('click',()=>{
   if(m.classList.contains('hide')){
     m.innerHTML=`<div class="uprov">Đăng nhập bằng ${esc((session&&session.provider)||'?')}</div>
       <div class="umail"><b>${esc(session?session.name:'')}</b><br>${esc(session&&session.email||'không có email (demo)')}</div>
+      ${isAdmin()?'<div class="gold" style="margin:6px 0 2px">🛡 TÀI KHOẢN ADMIN</div>':'<div style="font-size:11px;color:var(--mut);padding:2px 4px">Tài khoản thường</div>'}
+      <div style="font-size:10.5px;color:var(--mut);padding:2px 4px;word-break:break-all">UID: ${esc((session&&session.id)||'')}</div>
       <button class="btn" type="button" id="kycMenuBtn" style="color:var(--navy)">🪪 Xác minh danh tính</button>
       <button class="btn" type="button" id="logoutBtn">Đăng xuất</button>`;
     m.classList.remove('hide');
