@@ -1022,13 +1022,13 @@ function mapsQuery(pt){return encodeURIComponent(((pt.addr)?pt.addr+' — ':'')+
 function load(key,fb){try{const v=JSON.parse(localStorage.getItem(key));return v==null?fb:v;}catch(e){return fb;}}
 function save(key,v){try{localStorage.setItem(key,JSON.stringify(v));}catch(e){}}
 let profile=load('keode.profile.v1',null);
+function normCat(c){return c==='Đá banh'?'Thể thao':c;}
+const nextId=()=>Date.now()+Math.floor(Math.random()*999);
 let KEO=load('keode.posts.v2',[]);
 if(!Array.isArray(KEO))KEO=[];
 KEO=KEO.map(p=>Object.assign({},p,{cat:normCat(p.cat)}));
 let VREQ=load('keode.venueReq.v1',[]);
 if(!Array.isArray(VREQ))VREQ=[];
-const nextId=()=>Date.now()+Math.floor(Math.random()*999);
-const normCat=c=>c==='Đá banh'?'Thể thao':c;
 const filterState={q:'',district:'',cat:'all',sort:'up'};
 let avColorIdx=0;
 const AVCOLORS=['#2E5BE8','#F43F6B','#FFB020','#8B5CF6','#14B8A6','#EC4899','#22C55E','#64748B'];
@@ -1146,7 +1146,11 @@ async function initCloud(){
         PARTNERS.forEach(p=>{const{id,...data}=p;db.collection('venues').doc(String(p.id)).set(data).catch(()=>{});});
       }
     },()=>{});
-    db.collection('kyc').onSnapshot(s=>{KYC_C=s.docs.map(d=>Object.assign({id:d.id},d.data()));if(aTab==='kyc')renderAdminBody();updateKycBanner();});
+    if(isAdmin()){
+      db.collection('kyc').onSnapshot(s=>{KYC_C=s.docs.map(d=>Object.assign({id:d.id},d.data()));if(aTab==='kyc')renderAdminBody();updateKycBanner();},()=>{});
+    }else if(session&&session.id){
+      db.collection('kyc').doc(String(session.id)).onSnapshot(d=>{KYC_C=d.exists?[Object.assign({id:d.id},d.data())]:[];updateKycBanner();},()=>{});
+    }
     db.collection('keos').orderBy('created','desc').limit(150).onSnapshot(snap=>{
       CLOUD_KEO=snap.docs.map(d=>{const o=Object.assign({id:d.id},d.data());o.cat=normCat(o.cat);return o;});
       cloudConnecting=false;
