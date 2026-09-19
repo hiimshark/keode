@@ -21,16 +21,19 @@ await page.click('.ptab[data-pt="safety"]');
 console.log('tab an toàn:', (await page.textContent('#policyBody')).includes('3 nguyên tắc vàng'));
 await page.screenshot({ path: `${OUT}/v7-policy.png` });
 
-// 1. login + phone UI + cấu hình Firebase paste
+// 1. login sạch: config ships sẵn, OTP đã xoá
 await page.goto(FILE, { waitUntil: 'networkidle' });
-console.log('login | phone UI =', await page.locator('#phNum').count());
-await page.click('#cfgToggle');
-await page.fill('#cfgPaste', 'const firebaseConfig = { apiKey: "AIzaFake", authDomain: "keode.firebaseapp.com", projectId: "keode", appId: "1:123:web:abc" };');
-await page.click('#cfgSave');
-console.log('firebase config:', (await page.textContent('#cfgStatus')).includes('Đăng nhập Google/Facebook thật đã bật'));
+console.log('login hiện?', await page.locator('#view-login:not(.hide)').count() === 1,
+  '| Google nút hiện (file:// dùng mock)?', await page.locator('#gMock:not(.hide),#gsiBtn:not(.hide)').count() >= 1,
+  '| cfgBar ẩn cho khách?', await page.evaluate(() => getComputedStyle(document.getElementById('cfgBar')).display === 'none'),
+  '| OTP đã xoá?', await page.locator('#phNum').count() === 0,
+  '| config nạp?', await page.evaluate(() => !!(window.KEO_FIREBASE_CONFIG && window.KEO_FIREBASE_CONFIG.apiKey)));
 
-// 2. demo → onboarding → app
-await page.click('#demoLink');
+// 2. vào onboarding (seed session demo)
+await page.evaluate(() => localStorage.clear());
+await page.evaluate(() => localStorage.setItem('keode.session.v1', JSON.stringify({provider:'demo',id:'demo',name:'Lê Hoàng Vũ',email:'',picture:''})));
+await page.evaluate(() => { location.hash = 'onboard'; });
+await page.reload({ waitUntil: 'networkidle' });
 await page.waitForSelector('#view-onboard:not(.hide)');
 await page.fill('#obDob', '2004-11-27');
 await page.click('#obNext');
@@ -113,7 +116,9 @@ page.once('dialog', dlg => dlg.accept());
 await page.click('#logoutBtn');
 await page.waitForTimeout(200);
 console.log('logout | login hiện?', await page.locator('#view-login:not(.hide)').count() === 1);
-await page.click('#demoLink');
+await page.evaluate(() => localStorage.setItem('keode.session.v1', JSON.stringify({provider:'demo',id:'demo',name:'Lê Hoàng Vũ',email:'',picture:''})));
+await page.evaluate(() => { location.hash = 'onboard'; });
+await page.reload({ waitUntil: 'networkidle' });
 await page.fill('#obDob', '2004-11-27');
 await page.click('#obNext');
 await page.click('#obDistricts .pchip:nth-child(1)');

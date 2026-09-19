@@ -12,7 +12,10 @@ page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.
 
 const gotoApp = async () => {
   await page.goto(FILE, { waitUntil: 'networkidle' });
-  await page.click('#demoLink');
+  await page.evaluate(() => localStorage.clear());
+  await page.evaluate(() => localStorage.setItem('keode.session.v1', JSON.stringify({provider:'demo',id:'demo',name:'Lê Hoàng Vũ',email:'',picture:''})));
+  await page.evaluate(() => { location.hash = 'onboard'; });
+await page.reload({ waitUntil: 'networkidle' });
   await page.fill('#obDob', '2004-11-27');
   await page.click('#obNext');
   await page.click('#obDistricts .pchip:nth-child(1)');

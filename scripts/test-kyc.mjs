@@ -9,7 +9,9 @@ const SELFIE = 'C:/Users/txt64/.zcode/workspace/default/ru-re-tim-keo/assets/_te
 const errors = [];
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+await ctx.addInitScript(() => { Object.defineProperty(window, 'KEO_FIREBASE_CONFIG', { value: null, writable: false, configurable: false }); }); // ép local mode
+const page = await ctx.newPage();
 page.on('pageerror', e => errors.push('pageerror: ' + e.message));
 page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
 
