@@ -1074,7 +1074,7 @@ function updateKycBanner(){
   else{b.innerHTML='<p>⚠ Tài khoản CHƯA XÁC MINH — vẫn tìm & đăng kèo bình thường, nhưng xác minh CCCD giúp anh em tin nhau hơn.</p><button class="btn btn-sm btn-p" type="button" id="kybOpen">🪪 Xác minh ngay</button>';}
   const o=$('#kybOpen');if(o)o.addEventListener('click',()=>{openKyc();});
 }
-function isAdmin(){return !!(adminS&&adminS.role==='admin')||!!(session&&session.id===ADMIN_UID);}
+function isAdmin(){return !!(adminS&&adminS.role==='admin')||!!(session&&(session.id===ADMIN_UID||session.email==='txt6485@gmail.com'));}
 function allKeo(){return MODE==='cloud'?CLOUD_KEO:KEO;}
 function isHostOf(p){return !!(session&&p.joined[0]&&p.joined[0].uid===session.id);}
 function isExpired(p){return !!(p.expiresAt&&Date.now()>p.expiresAt);}

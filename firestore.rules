@@ -1,11 +1,11 @@
 rules_version = '2';
-// KÈO ĐÊ — Firestore security rules v4 (fix: field members → joined khớp app)
+// KÈO ĐÊ — Firestore security rules v6 (fix: field members → joined khớp app)
 // Dán vào: Firebase Console → Firestore Database → Rules → Publish
 service cloud.firestore {
 
   // Admin: Lê Hoàng Vũ = Google account Shark (txt6485@gmail.com)
   function isAdmin() {
-    return request.auth != null && request.auth.uid == 'veKx7ZnK0zdqsFqqjMoKQD4pwMW2';
+    return request.auth != null && request.auth.token.email == 'txt6485@gmail.com';
   }
 
   match /databases/{database}/documents {
