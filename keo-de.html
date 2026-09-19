@@ -1099,7 +1099,7 @@ function renderLoginAuth(){
   if(st)st.innerHTML=fbValid(FB)
     ?'<span class="okb">✓ Đăng nhập Google/Facebook thật đã bật</span> <span style="color:var(--mut)">— người dùng chỉ cần bấm nút và chọn tài khoản</span>'
     :'<span class="nob">Chưa bật đăng nhập thật</span> — bấm ⚙️ bên dưới để cấu hình 1 lần (5 phút).';
-  if(fbValid(FB)){$('#cfgPanel').classList.add('hide');$('#cfgToggle').classList.add('hide');}
+  if(fbValid(FB)){$('#cfgPanel').classList.add('hide');$('#cfgToggle').classList.add('hide');$('#demoLink').classList.add('hide');}
 }
 function toggleCfg(open){$('#cfgPanel').classList.toggle('hide',!open);}
 async function initCloud(){
