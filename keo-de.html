@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://api.stripe.com wss://*.firebaseio.com https://apis.google.com https://www.google.com; frame-src https://accounts.google.com https://*.firebaseapp.com https://*.web.app https://www.facebook.com;">
 <title>KÈO ĐÊ! · Hôm nay đi đâu?</title>
 <!--
-  KÈO ĐÊ — v0.9 "EMAIL ACCOUNTS + KYC CCCD" (user đổi hướng: bỏ pixel, giao diện hiện đại như cokeo.vn)
+  KÈO ĐÊ — v0.9.4 "CLOUD-ONLY" (user đổi hướng: bỏ pixel, giao diện hiện đại như cokeo.vn)
   ========================================================================================
   - Skin: nền xám sáng #F4F6FB, card trắng bo 16px, accent xanh dương #2E5BE8, pill/chip bo tròn,
     avatar tròn màu, icon emoji trong vòng tròn pastel (như cokeo), font Baloo 2 + Be Vietnam Pro.
@@ -474,7 +474,7 @@ b,strong{font-weight:700}
     <div class="logo"><span class="beers">🍻</span>KÈO ĐÊ</div>
     <h1 class="wordmark">Hôm nay đi đâu?</h1>
     <p class="tagline">Dân Sài Gòn rủ nhau đi kèo - kèo nào cũng có người đi cùng.</p>
-    <p class="cats-line">Cà phê · Ăn uống · Xem phim · Nhậu · Đá banh · Du lịch · Karaoke</p>
+    <p class="cats-line">Cà phê · Ăn uống · Xem phim · Nhậu · Thể thao · Du lịch · Karaoke</p>
     <div class="board">
       <p class="blab">Đăng nhập để rủ kèo</p>
       <div class="lbtns">
@@ -891,15 +891,23 @@ b,strong{font-weight:700}
       <div class="fradio" id="catRadios"></div>
       <label class="flab" for="fname">Tên kèo</label>
       <input id="fname" name="fname" required maxlength="90" placeholder="vd: Cà phê làm việc cùng nhau cuối tuần">
-      <label class="flab" for="fplace">Địa điểm <small>(gõ tên quán — có gợi ý quán đối tác)</small></label>
-      <input id="fplace" name="fplace" required maxlength="120" list="partnerList" placeholder="vd: Cộng Cà Phê Nguyễn Du">
-      <datalist id="partnerList"></datalist>
-      <div id="partnerHint" class="partnerhint hide"></div>
-      <label class="flab" for="fDistrict">Quận</label>
-      <select id="fDistrict"></select>
+      <div id="fLocNormal">
+        <label class="flab" for="fplace">Địa điểm <small>(gõ tên quán — có gợi ý quán đối tác)</small></label>
+        <input id="fplace" name="fplace" required maxlength="120" list="partnerList" placeholder="vd: Cộng Cà Phê Nguyễn Du">
+        <datalist id="partnerList"></datalist>
+        <div id="partnerHint" class="partnerhint hide"></div>
+        <label class="flab" for="fDistrict">Quận</label>
+        <select id="fDistrict"></select>
+      </div>
+      <div id="fTravel" class="hide">
+        <label class="flab" for="fFrom">Xuất phát tại</label>
+        <input id="fFrom" maxlength="120" placeholder="vd: Siêu thị Co.opmart Thủ Đức">
+        <label class="flab" for="fTo">Điểm đến</label>
+        <input id="fTo" maxlength="120" placeholder="vd: Vũng Tàu / Đà Lạt">
+      </div>
       <div class="f3">
-        <div><label class="flab" for="fdate">Ngày</label><input type="date" id="fdate" required></div>
-        <div><label class="flab" for="ftime">Giờ</label><input type="time" id="ftime" required></div>
+        <div><label class="flab" for="fdate" id="fdateLabel">Ngày</label><input type="date" id="fdate" required></div>
+        <div><label class="flab" for="ftime" id="ftimeLabel">Giờ</label><input type="time" id="ftime" required></div>
         <div><label class="flab" for="fnum">Cần bao nhiêu người</label><input type="number" id="fnum" min="2" max="20" value="6"></div>
       </div>
       <label class="flab">Vibe của kèo <small>(chọn tối đa 3)</small></label>
@@ -933,7 +941,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 /* ================= DỮ LIỆU TĨNH ================= */
 const CATS={
   'Cà phê':{c:'#FFD98E',e:'☕'}, 'Ăn uống':{c:'#FFB59E',e:'🍜'}, 'Xem phim':{c:'#D9C2F5',e:'🍿'},
-  'Nhậu':{c:'#9FE8DB',e:'🍻'}, 'Đá banh':{c:'#A8E88E',e:'⚽'}, 'Du lịch':{c:'#9CCBFF',e:'✈️'}, 'Karaoke':{c:'#F9B8D4',e:'🎤'}
+  'Nhậu':{c:'#9FE8DB',e:'🍻'}, 'Thể thao':{c:'#A8E88E',e:'⚽'}, 'Du lịch':{c:'#9CCBFF',e:'✈️'}, 'Karaoke':{c:'#F9B8D4',e:'🎤'}
 };
 const CAT_LIST=Object.keys(CATS);
 const DISTRICTS=['Quận 1','Quận 3','Quận 4','Quận 5','Quận 6','Quận 7','Quận 8','Quận 10','Quận 11','Quận 12',
@@ -947,13 +955,13 @@ const PAYS_NOTE={ 'Chia đều hóa đơn':'Thống nhất cùng nhau trước b
 const SEED_PARTNERS=[
   {id:'p1',name:'Sài Gòn Espresso Lab',district:'Quận 1',tags:['Cà phê đặc sản','Làm việc'],promo:'Giảm 10% hoá đơn cho kèo ghé quán',note:'Góc yên tĩnh, nhiều ổ cắm, nhạc lo-fi nhẹ nhàng.',emoji:'☕'},
   {id:'p2',name:'Bia Kè Corner',district:'Bình Thạnh',tags:['Bia craft','Xem bóng'],promo:'Tặng 1 đĩa đồ nhậu cho kèo từ 5 người',note:'Màn hình lớn bóng đá, ngồi vỉa hè mát rượi.',emoji:'🍻'},
-  {id:'p3',name:'Sân Cỏ Đề Phòng',district:'Gò Vấp',tags:['Đá banh','Sân 5'],promo:'Giờ vàng thuê sân giảm 50k cho mỗi kèo',note:'Sân cỏ nhân tạo 5 người, có nước uống.',emoji:'⚽'}
+  {id:'p3',name:'Sân Cỏ Đề Phòng',district:'Gò Vấp',tags:['Thể thao','Sân 5'],promo:'Giờ vàng thuê sân giảm 50k cho mỗi kèo',note:'Sân cỏ nhân tạo 5 người, có nước uống.',emoji:'⚽'}
 ];
 let PARTNERS=load('keode.partners.v1',null)||SEED_PARTNERS.slice();
 const savePartners=()=>save('keode.partners.v1',PARTNERS);
 const partnerById=id=>PARTNERS.find(p=>p.id===id)||null;
 const partnerEmoji=pt=>pt.emoji||(pt.tags[0]==='Cà phê đặc sản'?'☕':pt.tags[0]==='Bia craft'?'🍻':'⚽');
-const partnerCat=pt=>pt.tags&&pt.tags[0]==='Cà phê đặc sản'?'Cà phê':pt.tags&&pt.tags[0]==='Bia craft'?'Nhậu':'Đá banh';
+const partnerCat=pt=>pt.tags&&pt.tags[0]==='Cà phê đặc sản'?'Cà phê':pt.tags&&pt.tags[0]==='Bia craft'?'Nhậu':'Thể thao';
 function mapsQuery(pt){return encodeURIComponent(((pt.addr)?pt.addr+' — ':'')+pt.name+' '+pt.district+' TP. Hồ Chí Minh');}
 
 /* ================= TRẠNG THÁI (localStorage) ================= */
@@ -962,9 +970,11 @@ function save(key,v){try{localStorage.setItem(key,JSON.stringify(v));}catch(e){}
 let profile=load('keode.profile.v1',null);
 let KEO=load('keode.posts.v2',[]);
 if(!Array.isArray(KEO))KEO=[];
+KEO=KEO.map(p=>Object.assign({},p,{cat:normCat(p.cat)}));
 let VREQ=load('keode.venueReq.v1',[]);
 if(!Array.isArray(VREQ))VREQ=[];
 const nextId=()=>Date.now()+Math.floor(Math.random()*999);
+const normCat=c=>c==='Đá banh'?'Thể thao':c;
 const filterState={q:'',district:'',cat:'all',sort:'up'};
 let avColorIdx=0;
 const AVCOLORS=['#2E5BE8','#F43F6B','#FFB020','#8B5CF6','#14B8A6','#EC4899','#22C55E','#64748B'];
@@ -974,7 +984,7 @@ const AVCOLORS=['#2E5BE8','#F43F6B','#FFB020','#8B5CF6','#14B8A6','#EC4899','#22
    Chủ web làm 1 lần: dán firebaseConfig vào khung cấu hình (hoặc đặt file auth-config.js cạnh HTML). */
 let FB=window.KEO_FIREBASE_CONFIG||load('keode.firebase.v1',null);
 let session=load('keode.session.v1',null);
-let MODE='local',CLOUD_KEO=[],db=null,cloudConnecting=false,confirmResult=null;
+let MODE='local',CLOUD_KEO=[],db=null,cloudConnecting=false,confirmResult=null,venueSeeded=false;
 const ADMIN_NAMES=['Lê Hoàng Vũ']; // production: dùng custom claim admin trên Firebase, không so tên
 let adminS=load('keode.admin.v1',null);
 function hashStr(s){let x=0x811c9dc5;for(let i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,0x01000193)>>>0;}let y=0x01000193;for(let i=s.length-1;i>=0;i--){y^=s.charCodeAt(i)+i;y=Math.imul(y,0x85ebca6b)>>>0;}return 'v1.'+x.toString(36)+'.'+y.toString(36);}
@@ -1072,18 +1082,34 @@ async function initCloud(){
     await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js');
     db=firebase.firestore();
     db.collection('verifications').onSnapshot(s=>{CLOUD_VERIFIED={};s.forEach(d=>{CLOUD_VERIFIED[d.id]=d.data()||{};});if(MODE==='cloud')renderAll();});
+    db.collection('venues').onSnapshot(s=>{
+      if(!s.empty){
+        PARTNERS=s.docs.map(d=>Object.assign({id:d.id},d.data()));
+        renderPartnerStrip();renderVenues();
+      }else if(!venueSeeded){
+        venueSeeded=true;
+        /* lần đầu: đẩy quán mẫu + quán đã tạo trên máy lên cloud (chỉ admin thành công) */
+        PARTNERS.forEach(p=>{const{id,...data}=p;db.collection('venues').doc(String(p.id)).set(data).catch(()=>{});});
+      }
+    },()=>{});
     db.collection('kyc').onSnapshot(s=>{KYC_C=s.docs.map(d=>Object.assign({id:d.id},d.data()));if(aTab==='kyc')renderAdminBody();updateKycBanner();});
     db.collection('keos').orderBy('created','desc').limit(150).onSnapshot(snap=>{
-      CLOUD_KEO=snap.docs.map(d=>Object.assign({id:d.id},d.data()));
+      CLOUD_KEO=snap.docs.map(d=>{const o=Object.assign({id:d.id},d.data());o.cat=normCat(o.cat);return o;});
       cloudConnecting=false;
-      if(MODE!=='cloud'){MODE='cloud';toast('☁️ Đã kết nối cloud — kèo của mọi người hiển thị chung.');}
-      renderAll();updateModeBadge();
+      const wasLocal=MODE!=='cloud';
+      if(wasLocal){MODE='cloud';toast('☁️ Đã kết nối cloud — kèo của mọi người hiển thị chung.');}
+      /* migrate: kèo/quán đã tạo lúc local (trước khi có cloud) đẩy lên cloud 1 lần */
+      if(KEO.length&&session&&session.id){
+        const ids=new Set(CLOUD_KEO.map(x=>String(x.id)));
+        KEO.forEach(p=>{if(!ids.has(String(p.id))){const{ id,...data }=p;db.collection('keos').doc(String(p.id)).set(Object.assign({},data,{hostUid:session.id})).catch(()=>{});}});
+        KEO=[];save('keode.posts.v2',KEO);
+      }
     },err=>{cloudConnecting=false;MODE='local';updateModeBadge();toast('Cloud lỗi: '+err.message+' — tạm dùng chế độ máy bạn.');});
   }catch(e){cloudConnecting=false;MODE='local';updateModeBadge();toast('Không kết nối được cloud — đang dùng chế độ máy bạn.');}
 }
 function startSession(s){
   session=s;save('keode.session.v1',s);
-  if(s.provider!=='demo'&&fbValid(FB)&&MODE!=='cloud'&&!cloudConnecting){cloudConnecting=true;initCloud();}
+  if(fbValid(FB)&&MODE!=='cloud'&&!cloudConnecting){cloudConnecting=true;initCloud();}
   const sameProfile=profile&&(profile.email||'')===(s.email||''); // đã có hồ sơ của chính tài khoản này
   if(sameProfile){
     route('discover');applyRoute();
@@ -1163,7 +1189,7 @@ function cardHTML(p){
   const iJoined=!!(session&&p.joined.some(m=>m.uid===session.id));
   const chips=[
     `<span class="ctag">${p.cat}</span>`,
-    `<span class="ctag">${esc(p.district)}</span>`,
+    (p.district==='Du lịch'?'':`<span class="ctag">${esc(p.district)}</span>`),
     partner?`<span class="ctag a">QUÁN ĐỐI TÁC</span>`:'',
     isExpired(p)?`<span class="ctag" style="background:#6A7190">Đã ẩn (hết hạn)</span>`:'',
     isLate(p)&&!w.past?`<span class="ctag r">🌙 Kèo khuya</span>`:'',
@@ -1176,7 +1202,9 @@ function cardHTML(p){
     </div>
     <div class="kbody">
       <h3 class="ktitle">${esc(p.title)}</h3>
-      <div class="kmeta"><svg class="pinic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.place)} · ${esc(p.district)}</span></div>
+      ${p.cat==='Du lịch'&&p.from
+        ?`<div class="kmeta"><span>🚗 ${esc(p.from)} → ${esc(p.to||'')}</span></div>`
+        :`<div class="kmeta"><svg class="pinic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.place)} · ${esc(p.district)}</span></div>`}
       <div class="ktime">${w.day} · <span class="kcd">${w.cd}</span></div>
       <div class="slots"><span class="cells">${slotCells(p.total,p.joined.length)}</span><b class="tnum">${p.joined.length}/${p.total} người</b></div>
       ${p.vibes.length?`<div class="vibes">${p.vibes.map(v=>`<span class="vchip">${esc(v)}</span>`).join('')}</div>`:''}
@@ -1236,13 +1264,13 @@ function detailHTML(p){
   const iJoined=!!(session&&p.joined.some(m=>m.uid===session.id));
   const isHost=isHostOf(p);
   const hostKeo=allKeo().filter(x=>x.joined[0]&&x.joined[0].uid===p.joined[0].uid).length;
-  const mapsQ=encodeURIComponent(p.place+' '+p.district+' TP. Hồ Chí Minh');
+  const mapsQ=encodeURIComponent((p.cat==='Du lịch'&&p.from)?(p.from+' đến '+p.to):(p.place+' '+p.district+' TP. Hồ Chí Minh'));
   const d=Object.values(SG_SVG.districts).find(x=>x.n===p.district);
   return `
   <div class="dcover" style="${coverStyle(p.cat)}">
     <span class="cico">${CATS[p.cat].e}</span>
     <span class="chips">
-      <span class="ctag">${p.cat}</span><span class="ctag">${esc(p.district)}</span>
+      <span class="ctag">${p.cat}</span>${p.district==='Du lịch'?'':'<span class="ctag">'+esc(p.district)+'</span>'}
       ${partner?`<span class="ctag a">QUÁN ĐỐI TÁC</span>`:''}
       ${w.past?`<span class="ctag">Đã diễn ra</span>`:w.ongoing?`<span class="ctag g">Đang diễn ra</span>`:remain<=0?`<span class="ctag p">Hết chỗ</span>`:`<span class="ctag p">Còn ${remain} chỗ</span>`}
       <span class="ctag b">${w.cd}</span>
@@ -1266,7 +1294,9 @@ function detailHTML(p){
         <div class="drow"><span class="dico">🕐</span>
           <div><b>${w.day}</b><small>${w.past?'Kèo đã diễn ra':w.ongoing?'Kèo đang diễn ra — tới là có mặt':'Còn '+w.cd.replace('Còn ','')} · ${esc(p.date)}${p.time?' '+p.time:''}</small></div></div>
         <div class="drow"><span class="dico">📍</span>
-          <div><b>${esc(p.place)}</b><small>${esc(p.district)} · TP. Hồ Chí Minh</small>
+          <div>${p.cat==='Du lịch'&&p.from
+            ?`<b>Xuất phát: ${esc(p.from)}</b><small>Điểm đến: ${esc(p.to||'')}</small>`
+            :`<b>${esc(p.place)}</b><small>${esc(p.district)} · TP. Hồ Chí Minh</small>`}
           <a class="btn btn-sm" style="margin-top:8px;text-decoration:none" href="https://www.google.com/maps/search/?api=1&query=${mapsQ}" target="_blank" rel="noopener">Mở Google Maps ↗</a></div></div>
         <div class="drow"><span class="dico">👥</span>
           <div><b>${p.joined.length}/${p.total} người</b><small>Ưu tiên 18–60 tuổi · Tất cả giới tính</small></div></div>
@@ -1439,6 +1469,7 @@ function openModal(opts){
       kf.rcat.value=p.cat;kf.fname.value=p.title;kf.fdesc.value=p.desc||'';
       kf.fplace.value=p.place;kf.fDistrict.value=p.district;
       kf.fdate.value=p.date||'';kf.ftime.value=p.time||'';kf.fnum.value=p.total;
+      kf.fFrom.value=p.from||'';kf.fTo.value=p.to||'';
       kf.fexp.value=String(p.expHours!=null?p.expHours:24);
       kf.rpay.value=p.pay||'Chia đều hóa đơn';
       $$('#vibeChips input').forEach(i=>{i.checked=(p.vibes||[]).includes(i.value);i.disabled=false;});
@@ -1449,6 +1480,7 @@ function openModal(opts){
     editingKeoId=null;
     $('#mtitle').textContent='Tạo kèo mới';
   }
+  updateTravelMode();
   $('#overlay').classList.remove('hide');
   document.body.style.overflow='hidden';
   setTimeout(()=>$('#fname').focus(),30);
@@ -1472,6 +1504,17 @@ $('#fplace').addEventListener('input',()=>{
     $('#partnerHint').classList.remove('hide');$('#partnerHint').textContent='Quán đối tác: '+pt.promo;}
   else{prefillPartner=null;$('#partnerHint').classList.add('hide');}
 });
+function updateTravelMode(){
+  const isTravel=(document.querySelector('input[name="rcat"]:checked')||{}).value==='Du lịch';
+  $('#fLocNormal').classList.toggle('hide',isTravel);
+  $('#fTravel').classList.toggle('hide',!isTravel);
+  $('#fFrom').required=isTravel;
+  $('#fTo').required=isTravel;
+  $('#fplace').required=!isTravel;
+  $('#fdateLabel').textContent=isTravel?'Ngày khởi hành':'Ngày';
+  $('#ftimeLabel').textContent=isTravel?'Giờ khởi hành':'Giờ';
+}
+$('#catRadios').addEventListener('change',updateTravelMode);
 $('#vibeChips').addEventListener('change',()=>{
   const on=$$('#vibeChips input:checked');
   if(on.length>=3)$$('#vibeChips input:not(:checked)').forEach(i=>{i.disabled=true;});
@@ -1485,8 +1528,13 @@ $('#kform').addEventListener('submit',async e=>{
   const evT=new Date(f.fdate.value+'T'+(f.ftime.value||'00:00')).getTime();
   const expH=+f.fexp.value;
   const expiresAt=expH?evT+expH*3600000:null;
+  const isTravel=f.rcat.value==='Du lịch';
+  const from=isTravel?f.fFrom.value.trim():'';
+  const to=isTravel?f.fTo.value.trim():'';
   const base={cat:f.rcat.value,title:f.fname.value.trim(),desc:f.fdesc.value.trim(),
-    vibes,place:f.fplace.value.trim(),district:f.fDistrict.value,
+    vibes,place:isTravel?from+' → '+to:f.fplace.value.trim(),
+    district:isTravel?'Du lịch':f.fDistrict.value,
+    from,to,
     date:f.fdate.value,time:f.ftime.value,total:Math.min(20,Math.max(2,+f.fnum.value||6)),
     pay:f.rpay.value,partner:prefillPartner?prefillPartner.id:null,
     expiresAt,created:Date.now()};
@@ -1838,7 +1886,9 @@ $('#adminBody').addEventListener('click',e=>{
   else if(act==='adel'){if(confirm('Xoá kèo này? Hành động không thể hoàn tác.'))adminDeleteKeo(id);}
   else if(act==='vadd')openVenueModal();
   else if(act==='vedit')openVenueModal(id);
-  else if(act==='vdel'){if(confirm('Xoá quán đối tác này?')){PARTNERS=PARTNERS.filter(x=>x.id!==id);savePartners();renderAdminBody();renderPartnerStrip();renderVenues();toast('Đã xoá quán.');}}
+  else if(act==='vdel'){if(!confirm('Xoá quán đối tác này?'))return;
+    if(MODE==='cloud'&&db){db.collection('venues').doc(String(id)).delete().then(()=>{renderAdminBody();renderPartnerStrip();renderVenues();toast('Đã xoá quán.');}).catch(err=>toast('Lỗi cloud: '+err.code));}
+    else{PARTNERS=PARTNERS.filter(x=>x.id!==id);savePartners();renderAdminBody();renderPartnerStrip();renderVenues();toast('Đã xoá quán.');}}
   else if(act==='rdel'){VREQ=VREQ.filter(x=>String(x.at)!==String(id));save('keode.venueReq.v1',VREQ);renderAdminBody();renderVenues();}
   else if(act==='kycok'){
     if(MODE==='cloud'&&db){
@@ -1880,10 +1930,15 @@ $('#veForm').addEventListener('submit',e=>{
   const data={name:$('#vEname').value.trim(),district:$('#vEdistrict').value,emoji:$('#vEemoji').value,
     tags:$('#vEtags').value.split(',').map(x=>x.trim()).filter(Boolean),addr:$('#vEaddr').value.trim(),promo:$('#vEpromo').value.trim(),note:$('#vEnote').value.trim()};
   if(!data.name){toast('Điền tên quán nhé.');return;}
-  if(editingVenueId){const i=PARTNERS.findIndex(x=>x.id===editingVenueId);if(i>=0)PARTNERS[i]=Object.assign({},PARTNERS[i],data);}
-  else PARTNERS.unshift(Object.assign({id:'p'+Date.now()},data));
-  savePartners();closeVenueModal();renderAdminBody();renderPartnerStrip();renderVenues();
-  toast(editingVenueId?'Đã cập nhật quán.':'Đã thêm quán đối tác ✓');
+  if(MODE==='cloud'&&db){
+    if(editingVenueId){db.collection('venues').doc(String(editingVenueId)).update(data).then(()=>{closeVenueModal();toast('Đã cập nhật quán (cloud).');}).catch(err=>{toast('Lỗi cloud: cần đăng nhập Google bằng tài khoản admin. ('+err.code+')');});}
+    else{db.collection('venues').doc('p'+Date.now()).set(data).then(()=>{closeVenueModal();toast('Đã thêm quán đối tác lên cloud ✓');}).catch(err=>{toast('Lỗi cloud: cần đăng nhập Google bằng tài khoản admin. ('+err.code+')');});}
+  }else{
+    if(editingVenueId){const i=PARTNERS.findIndex(x=>x.id===editingVenueId);if(i>=0)PARTNERS[i]=Object.assign({},PARTNERS[i],data);}
+    else PARTNERS.unshift(Object.assign({id:'p'+Date.now()},data));
+    savePartners();closeVenueModal();renderAdminBody();renderPartnerStrip();renderVenues();
+    toast(editingVenueId?'Đã cập nhật quán.':'Đã thêm quán đối tác ✓');
+  }
 });
 let editingVenueId=null;
 function openVenueModal(id){

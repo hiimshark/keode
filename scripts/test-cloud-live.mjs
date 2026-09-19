@@ -4,6 +4,7 @@ import { chromium } from 'playwright';
 
 const URL = 'https://keode.netlify.app/';
 const errors = [];
+const uid = Date.now();
 
 const browser = await chromium.launch();
 
@@ -28,7 +29,7 @@ async function newUser(email, name) {
 }
 
 console.log('== Tạo user A (chủ kèo) ==');
-const A = await newUser('cloud-test-a@keo.vn', 'Chủ Kèo A');
+const A = await newUser('cloud-a-'+uid+'@keo.vn', 'Chủ Kèo A');
 const modeA = await A.p.textContent('#modeBadge');
 console.log('A | mode badge:', modeA.trim().slice(0, 20));
 
@@ -47,14 +48,20 @@ console.log('A | cards =', await A.p.locator('#feed .kcard').count(),
   '| toast:', (await A.p.textContent('#toast')).slice(0, 30));
 
 console.log('== Tạo user B (người tham gia) ==');
-const B = await newUser('cloud-test-b@keo.vn', 'Thành Viên B');
+const B = await newUser('cloud-b-'+uid+'@keo.vn', 'Thành Viên B');
 await B.p.waitForTimeout(2000);
 const modeB = await B.p.textContent('#modeBadge');
 console.log('B | mode badge:', modeB.trim().slice(0, 20));
 
 console.log('== B có thấy kèo của A? ==');
-const seen = await B.p.locator('#feed .kcard:has-text("Kèo cloud test — cà phê thử sync")').count();
-console.log('B | kèo của A hiện trong feed:', seen === 1);
+let seen = 0;
+for (let i = 0; i < 20; i++) {
+  seen = await B.p.locator('#feed .kcard:has-text("Kèo cloud test — cà phê thử sync")').count();
+  if (seen > 0) break;
+  await B.p.waitForTimeout(500);
+}
+console.log('B | kèo của A hiện trong feed (chờ tối đa 10s):', seen > 0);
+console.log('B | tất cả kèo B thấy:', (await B.p.locator('#feed .ktitle').allTextContents()).join(' | '));
 
 if (seen === 1) {
   console.log('== B xin tham gia ==');
