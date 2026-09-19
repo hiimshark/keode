@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://api.stripe.com wss://*.firebaseio.com https://apis.google.com https://www.google.com; frame-src https://accounts.google.com https://*.firebaseapp.com https://*.web.app https://www.facebook.com;">
 <title>KÈO ĐÊ! · Hôm nay đi đâu?</title>
 <!--
-  KÈO ĐÊ — v0.9.6 "MOBILE POLISH" (user đổi hướng: bỏ pixel, giao diện hiện đại như cokeo.vn)
+  KÈO ĐÊ — v0.9.9 "CLOUD-ONLY" (user đổi hướng: bỏ pixel, giao diện hiện đại như cokeo.vn)
   ========================================================================================
   - Skin: nền xám sáng #F4F6FB, card trắng bo 16px, accent xanh dương #2E5BE8, pill/chip bo tròn,
     avatar tròn màu, icon emoji trong vòng tròn pastel (như cokeo), font Baloo 2 + Be Vietnam Pro.
@@ -1050,11 +1050,11 @@ if(!Array.isArray(KYC))KYC=[];
 let VERIFIED_L=load('keode.verified.v1',{});
 if(typeof VERIFIED_L!=='object'||!VERIFIED_L)VERIFIED_L={};
 let CLOUD_VERIFIED={},KYC_C=[],KYC_ERR=null;
-function verifiedOf(uid){const m=(MODE==='cloud')?CLOUD_VERIFIED:VERIFIED_L;return !!m[uid];}
+function verifiedOf(uid){const m=db?CLOUD_VERIFIED:VERIFIED_L;return !!m[uid];}
 function myVerify(){
   if(!session)return'none';
   if(verifiedOf(session.id))return'verified';
-  const q=(MODE==='cloud')?KYC_C:KYC;
+  const q=db?KYC_C:KYC;
   return q.some(x=>String(x.uid)===String(session.id))?'pending':'none';
 }
 function saveAccounts(){save('keode.accounts.v1',ACCOUNTS);}
@@ -1075,15 +1075,17 @@ function updateKycBanner(){
   const o=$('#kybOpen');if(o)o.addEventListener('click',()=>{openKyc();});
 }
 function isAdmin(){return !!(adminS&&adminS.role==='admin')||!!(session&&(session.id===ADMIN_UID||session.email==='txt6485@gmail.com'));}
-function allKeo(){return MODE==='cloud'?CLOUD_KEO:KEO;}
+function allKeo(){return MODE==='cloud'?CLOUD_KEO:(fbValid(FB)?[]:KEO);}
 function isHostOf(p){return !!(session&&p.joined[0]&&p.joined[0].uid===session.id);}
 function isExpired(p){return !!(p.expiresAt&&Date.now()>p.expiresAt);}
 function isLate(p){if(!p.time)return false;const hh=+p.time.split(':')[0];return hh>=22||hh<4;}
 function updateModeBadge(){
   const b=$('#modeBadge');if(!b)return;
-  if(cloudConnecting){b.textContent='☁️ Đang kết nối cloud…';b.className='mbadge mcon';}
-  else if(MODE==='cloud'){b.textContent='☁️ Cloud — mọi người cùng thấy kèo';b.className='mbadge mcld';}
-  else{b.textContent='💾 Demo — kèo chỉ lưu trên máy này';b.className='mbadge mloc';}
+  b.onclick=null;b.style.cursor='';
+  if(cloudConnecting){b.textContent='⏳ Đang kết nối cloud…';b.className='mbadge mcon';}
+  else if(MODE==='cloud'){b.textContent='☁️ Cloud — kèo đồng bộ mọi thiết bị';b.className='mbadge mcld';}
+  else if(MODE==='error'){b.textContent='⚠️ Mất kết nối — bấm thử lại';b.className='mbadge mloc';b.style.cursor='pointer';b.onclick=()=>location.reload();}
+  else{b.textContent='🧪 Dev — dữ liệu máy này';b.className='mbadge mloc';}
 }
 function avatarHTML(m,s=30){
   if(m&&m.picture)return `<img class="avc avcimg" src="${esc(m.picture)}" alt="" style="width:${s}px;height:${s}px" referrerpolicy="no-referrer">`;
@@ -1174,8 +1176,8 @@ async function initCloud(){
         renderAll();
       }catch(e){console.warn('render sau snapshot:',e);}
       if(wasLocal){toast('☁️ Đã kết nối cloud — kèo của mọi người hiển thị chung.');}
-    },err=>{cloudConnecting=false;MODE='local';updateModeBadge();toast('Cloud lỗi: '+err.message+' — tạm dùng chế độ máy bạn.');});
-  }catch(e){cloudConnecting=false;MODE='local';updateModeBadge();toast('Không kết nối được cloud — đang dùng chế độ máy bạn.');}
+    },err=>{cloudConnecting=false;MODE='error';updateModeBadge();toast('⚠️ Không kết nối được cloud — bấm biểu tượng trạng thái để thử lại.');});
+  }catch(e){cloudConnecting=false;MODE='error';updateModeBadge();toast('⚠️ Không kết nối được cloud — bấm biểu tượng trạng thái để thử lại.');}
 }
 function startSession(s){
   session=s;save('keode.session.v1',s);
@@ -1427,14 +1429,26 @@ async function toggleJoin(id){
   const i=p.joined.findIndex(m=>m.uid===session.id);
   const member={uid:session.id,name:profile.name,color:profile.color,picture:profile.picture||'',rating:'0.0'};
   if(i>0){
-    if(MODE==='cloud'){try{await db.collection('keos').doc(String(id)).update({joined:p.joined.filter((_,idx)=>idx!==i)});p.joined=p.joined.filter((_,idx)=>idx!==i);}catch(e){toast('Lỗi cloud: '+e.message);return;}}
-    else{p.joined.splice(i,1);save('keode.posts.v2',KEO);}
+    if(db){
+      try{await db.collection('keos').doc(String(id)).update({joined:p.joined.filter((_,idx)=>idx!==i)});p.joined=p.joined.filter((_,idx)=>idx!==i);}
+      catch(e){toast('Lỗi cloud: '+e.message);return;}
+    }else if(!fbValid(FB)){
+      p.joined.splice(i,1);save('keode.posts.v2',KEO);
+    }else{
+      toast('⚠️ Chưa kết nối được cloud — thử lại nhé!');return;
+    }
     toast('Đã huỷ yêu cầu tham gia.');
   }else if(i===0){toast('Bạn là chủ kèo này mà!');return;}
   else{
     if(p.joined.length>=p.total){toast('Kèo đã đủ người rồi — hẹn kèo khác nhé!');return;}
-    if(MODE==='cloud'){try{await db.collection('keos').doc(String(id)).update({joined:[...p.joined,member]});p.joined=[...p.joined,member];}catch(e){toast('Lỗi cloud: '+e.message);return;}}
-    else{p.joined.push(member);save('keode.posts.v2',KEO);}
+    if(db){
+      try{await db.collection('keos').doc(String(id)).update({joined:[...p.joined,member]});p.joined=[...p.joined,member];}
+      catch(e){toast('Lỗi cloud: '+e.message);return;}
+    }else if(!fbValid(FB)){
+      p.joined.push(member);save('keode.posts.v2',KEO);
+    }else{
+      toast('⚠️ Chưa kết nối được cloud — đợi vài giây rồi thử lại nhé!');return;
+    }
     toast('Đã xin tham gia! Chờ chủ kèo duyệt nhé.');
   }
   renderFeed();renderMine();
@@ -1456,13 +1470,13 @@ async function deleteKeo(id){
   const p=allKeo().find(x=>String(x.id)===String(id));if(!p)return;
   if(!(isHostOf(p)||isAdmin())){toast('Chỉ chủ kèo hoặc quản trị viên mới xoá được.');return;}
   if(!confirm('Xoá kèo này? Hành động không thể hoàn tác.'))return;
-  if(MODE==='cloud'&&db){
+  if(db){
     try{await db.collection('keos').doc(String(id)).delete();}
     catch(err){toast('Lỗi cloud: '+err.message);return;}
-  }else{
+  }else if(!fbValid(FB)){
     KEO=KEO.filter(x=>String(x.id)!==String(id));
     save('keode.posts.v2',KEO);renderAll();
-  }
+  }else{toast('⚠️ Chưa kết nối được cloud — thử lại nhé!');return;}
   toast('Đã xoá kèo.');
   route(detailFrom==='mine'?'mine':'discover');
 }
@@ -1695,15 +1709,15 @@ $('#mnav').addEventListener('click',e=>{const t=e.target.closest('button');if(t)
 $('#resetKeo').addEventListener('click',()=>{
   if(!allKeo().length){toast('Chưa có kèo nào để xoá.');return;}
   if(!confirm('Xoá toàn bộ kèo đã tạo? (demo)'))return;
-  if(MODE==='cloud'&&db){
+  if(db){
     const mine=CLOUD_KEO.filter(p=>p.joined[0]&&p.joined[0].uid===session.id);
     Promise.all(mine.map(p=>db.collection('keos').doc(String(p.id)).delete()))
-      .then(()=>toast('Đã xoá các kèo của bạn khỏi cloud.'))
+      .then(()=>{renderAll();toast('Đã xoá các kèo của bạn khỏi cloud.');})
       .catch(err=>toast('Lỗi cloud: '+err.message));
-  }else{
+  }else if(!fbValid(FB)){
     KEO=[];save('keode.posts.v2',KEO);closeRadarPop();renderAll();
     toast('Đã xoá hết kèo — bảng tin đang trống.');
-  }
+  }else{toast('⚠️ Chưa kết nối được cloud — thử lại nhé!');}
 });
 $('#resetProfile').addEventListener('click',()=>{
   if(!confirm('Đặt lại hồ sơ và quay lại màn onboarding? (kèo đã tạo vẫn giữ)'))return;
@@ -1852,7 +1866,7 @@ function renderAdminBody(){
     const hosts=new Set(K.filter(p=>p.joined[0]).map(p=>p.joined[0].uid)).size;
     body.innerHTML=`
       <div class="sechead"><div><div class="kicker">Quản trị</div><h2>Tổng quan</h2></div>
-      <div class="ctl"><span class="mbadge ${MODE==='cloud'?'mcld':'mloc'}" style="cursor:default">${MODE==='cloud'?'☁️ Cloud':'💾 Local'}${cloudConnecting?' — đang kết nối…':''}</span></div></div>
+      <div class="ctl"><span class="mbadge ${MODE==='cloud'?'mcld':'mloc'}" style="cursor:default">${MODE==='cloud'?'☁️ Cloud':(MODE==='error'?'⚠️ Mất kết nối':'⏳ Đang kết nối…')}</span></div></div>
       <div class="astats">
         <div class="astat"><b>${K.length}</b><span>Tổng kèo</span></div>
         <div class="astat"><b>${open}</b><span>Đang mở</span></div>
@@ -1983,31 +1997,31 @@ $('#adminBody').addEventListener('click',e=>{
   else if(act==='vadd')openVenueModal();
   else if(act==='vedit')openVenueModal(id);
   else if(act==='vdel'){if(!confirm('Xoá quán đối tác này?'))return;
-    if(MODE==='cloud'&&db){db.collection('venues').doc(String(id)).delete().then(()=>{renderAdminBody();renderPartnerStrip();renderVenues();toast('Đã xoá quán.');}).catch(err=>toast('Lỗi cloud: '+err.code));}
+    if(db){db.collection('venues').doc(String(id)).delete().then(()=>{renderAdminBody();renderPartnerStrip();renderVenues();toast('Đã xoá quán.');}).catch(err=>toast('Lỗi cloud: '+err.code));}
     else{PARTNERS=PARTNERS.filter(x=>x.id!==id);savePartners();renderAdminBody();renderPartnerStrip();renderVenues();toast('Đã xoá quán.');}}
   else if(act==='rdel'){VREQ=VREQ.filter(x=>String(x.at)!==String(id));save('keode.venueReq.v1',VREQ);renderAdminBody();renderVenues();}
   else if(act==='kycok'){
-    if(MODE==='cloud'&&db){
+    if(db){
       Promise.all([
         db.collection('verifications').doc(String(id)).set({at:Date.now(),by:'admin'}),
         db.collection('kyc').doc(String(id)).delete()
       ]).then(()=>{renderAdminBody();toast('✓ Đã gắn thẻ xác minh.');}).catch(err=>toast('Lỗi cloud: '+err.message));
-    }else{
+    }else if(!fbValid(FB)){
       VERIFIED_L[id]={at:Date.now(),by:'admin'};saveVerified();
       KYC=KYC.filter(x=>String(x.uid)!==String(id));saveKYC();
       renderAdminBody();renderFeed();toast('✓ Đã gắn thẻ xác minh.');
-    }
+    }else{toast('⚠️ Chưa kết nối được cloud — thử lại nhé!');}
   }
   else if(act==='kycno'){
     if(!confirm('Từ chối yêu cầu này? Ảnh sẽ bị xoá, người dùng có thể gửi lại.'))return;
-    if(MODE==='cloud'&&db){db.collection('kyc').doc(String(id)).delete().catch(()=>{});}
+    if(db){db.collection('kyc').doc(String(id)).delete().catch(()=>{});}
     else{KYC=KYC.filter(x=>String(x.uid)!==String(id));saveKYC();}
     renderAdminBody();toast('Đã từ chối yêu cầu.');
   }
   else if(act==='admlogout'){adminS=null;localStorage.removeItem('keode.admin.v1');renderAdminView();toast('Đã đăng xuất quản trị.');}
   else if(act==='clearkeo'){
     if(!confirm('XOÁ TOÀN BỘ KÈO của mọi người? Không thể hoàn tác.'))return;
-    if(MODE==='cloud'&&db){CLOUD_KEO.forEach(p=>db.collection('keos').doc(String(p.id)).delete().catch(()=>{}));toast('Đang xoá trên cloud…');}
+    if(db){CLOUD_KEO.forEach(p=>db.collection('keos').doc(String(p.id)).delete().catch(()=>{}));toast('Đang xoá trên cloud…');}
     else{KEO=[];save('keode.posts.v2',KEO);closeRadarPop();renderAll();renderAdminBody();toast('Đã xoá toàn bộ kèo.');}
   }
 });
@@ -2055,14 +2069,14 @@ $('#vECancel').addEventListener('click',closeVenueModal);
 $('#venueOverlay').addEventListener('click',e=>{if(e.target===venueOverlay)closeVenueModal();});
 async function adminDeleteKeo(id){
   const p=allKeo().find(x=>String(x.id)===String(id));if(!p)return;
-  if(MODE==='cloud'&&db){
+  if(db){
     try{await db.collection('keos').doc(String(id)).delete();}
-    catch(err){toast('Lỗi cloud (cần quyền admin server): '+err.message);return;}
+    catch(err){toast('Lỗi cloud: '+err.message);return;}
     renderAdminBody();renderFeed();
-  }else{
+  }else if(!fbValid(FB)){
     KEO=KEO.filter(x=>String(x.id)!==String(id));
     save('keode.posts.v2',KEO);renderAll();renderAdminBody();
-  }
+  }else{toast('⚠️ Chưa kết nối được cloud — thử lại nhé!');return;}
   toast('Đã xoá kèo.');
 }
 
@@ -2079,7 +2093,7 @@ function closeKyc(){$('#kycOverlay').classList.add('hide');document.body.style.o
 function renderKyc(){
   const body=$('#kycBody'),st=myVerify();
   if(st==='verified'){
-    const v=(MODE==='cloud')?CLOUD_VERIFIED[session.id]:VERIFIED_L[session.id];
+    const v=db?CLOUD_VERIFIED[session.id]:VERIFIED_L[session.id];
     body.innerHTML=`<div class="latewarn" style="background:var(--green-t);border-color:var(--green);color:var(--green)">✓ Tài khoản của bạn ĐÃ XÁC MINH${v&&v.at?' lúc '+new Date(v.at).toLocaleString('vi-VN'):''}.</div>
       <p style="font-size:13px;color:var(--mut)">Ảnh CCCD/selfie bạn gửi đã bị XOÁ VĨNH VIỄN theo Chính sách quyền riêng tư — chỉ giữ lại trạng thái xác minh.</p>`;
     return;
@@ -2109,7 +2123,7 @@ function renderKyc(){
 }
 async function submitKyc(){
   const data={uid:session.id,name:profile.name,email:session.email||profile.email||'',cccd:kycCccd,selfie:kycSelfie,status:'pending',at:Date.now()};
-  if(MODE==='cloud'&&db){
+  if(db){
     try{await db.collection('kyc').doc(session.id).set(data);}
     catch(err){toast('Lỗi cloud: '+err.message);return;}
   }else{
@@ -2120,7 +2134,7 @@ async function submitKyc(){
   toast('Đã gửi yêu cầu xác minh! Chờ chủ hệ thống duyệt nhé.');
 }
 function withdrawKyc(){
-  if(MODE==='cloud'&&db){db.collection('kyc').doc(session.id).delete().catch(()=>{});}
+  if(db){db.collection('kyc').doc(session.id).delete().catch(()=>{});}
   else{KYC=KYC.filter(x=>String(x.uid)!==String(session.id));saveKYC();}
 }
 function closeKyc(){$('#kycOverlay').classList.add('hide');document.body.style.overflow='';}
