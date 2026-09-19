@@ -2098,6 +2098,7 @@ $('#regBtn').addEventListener('click',async ()=>{
   if(!regIsLogin&&!name)return err('Điền tên hiển thị nhé.');
   if(fbValid(FB)){
     try{
+      await ensureFirebase();
       let u;
       if(regIsLogin){u=(await firebase.auth().signInWithEmailAndPassword(email,pass)).user;}
       else{
