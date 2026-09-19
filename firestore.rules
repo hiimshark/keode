@@ -3,10 +3,9 @@ rules_version = '2';
 // Dán vào: Firebase Console → Firestore Database → Rules → Publish
 service cloud.firestore {
 
-  // ⚠️ THAY 'DÁN_UID_ADMIN_VÀO_ĐÂY' bằng User UID của Lê Hoàng Vũ
-  //    (Firebase Console → Authentication → Users → cột User UID)
+  // Admin: Lê Hoàng Vũ (User UID)
   function isAdmin() {
-    return request.auth != null && request.auth.uid == 'DÁN_UID_ADMIN_VÀO_ĐÂY';
+    return request.auth != null && request.auth.uid == 'mFbMQbKE5jhCR83aYBbSknoHdT42';
   }
 
   match /databases/{database}/documents {

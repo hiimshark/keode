@@ -485,29 +485,11 @@ b,strong{font-weight:700}
           </button>
           <div id="gsiBtn" class="gwide hide"></div>
         </div>
-
-        </div>
+      </div>
       <p class="lsmall">Đăng nhập thật qua Google — tên, email và ảnh đại diện lấy trực tiếp từ tài khoản của bạn. Dùng dịch vụ nghĩa là bạn đồng ý <a class="linklike" style="text-decoration:underline;text-transform:none;letter-spacing:0" href="#policy">Điều khoản</a> &amp; <a class="linklike" style="text-decoration:underline" href="#policy">Chính sách quyền riêng tư</a>.</p>
-      <p id="cfgStatus" class="cfgstat" style="margin:10px 0 0"></p>
-      <div class="cfgbar">
+      <div class="cfgbar" id="cfgBar" style="display:none">
         <button type="button" class="linklike" id="cfgToggle">⚙️ Cấu hình đăng nhập thật (làm 1 lần)</button>
         <button type="button" class="linklike" id="demoLink">Chưa có ID? Xem thử demo →</button>
-        <a class="linklike" href="#admin" style="color:var(--mut)">Quản trị</a>
-      </div>
-      <div class="regbox">
-        <div class="phsep">— hoặc tạo tài khoản / đăng nhập bằng email —</div>
-        <input id="regName" maxlength="40" placeholder="Tên hiển thị (vd: Lê Hoàng Vũ)">
-        <input id="regEmail" inputmode="email" autocomplete="email" placeholder="Email">
-        <input id="regPass" type="password" autocomplete="current-password" placeholder="Mật khẩu (tối thiểu 6 ký tự)">
-        <p class="err hide" id="regErr"></p>
-        <div style="display:flex;gap:8px">
-          <button id="regBtn" class="btn btn-p" type="button" style="flex:1">Tạo tài khoản</button>
-          <button id="regSwitch" class="btn" type="button">Đã có tài khoản? Đăng nhập</button>
-        </div>
-        <p class="lsmall" style="margin-top:8px">Chưa cần CCCD lúc đăng ký — xác minh danh tính làm sau trong app, tuỳ bạn.</p>
-      </div>
-      <div class="cfgbar">
-        <button type="button" class="linklike" id="cfgToggle" style="display:none">⚙️ Cấu hình đăng nhập thật (làm 1 lần)</button>
       </div>
       <div id="cfgPanel" class="cfgpanel hide">
         <p class="cfgtitle"><b>Bật đăng nhập thật bằng Firebase — làm 1 lần duy nhất (~5 phút, copy-paste)</b></p>
@@ -783,7 +765,7 @@ b,strong{font-weight:700}
     <a href="#policy" style="color:var(--blue);text-decoration:none">Điều khoản</a> ·
     <a href="#policy" style="color:var(--blue);text-decoration:none">Quyền riêng tư</a> ·
     <a href="#policy" style="color:var(--blue);text-decoration:none">An toàn cộng đồng</a> ·
-    <a href="#admin" style="color:var(--mut);text-decoration:none">Quản trị</a>
+
     <button type="button" id="resetKeo" class="freset">Xoá hết kèo (demo)</button>
     <button type="button" id="resetProfile" class="freset">Đặt lại hồ sơ</button>
   </footer>
@@ -1069,11 +1051,8 @@ function handleAuthErr(e){
   toast(M[e&&e.code]||('Lỗi đăng nhập: '+((e&&e.message)||e)));
 }
 function renderLoginAuth(){
-  const st=$('#cfgStatus');
-  if(st)st.innerHTML=fbValid(FB)
-    ?'<span class="okb">✓ Đăng nhập Google thật đã bật</span> <span style="color:var(--mut)">— người dùng chỉ cần bấm nút và chọn tài khoản</span>'
-    :'<span class="nob">Chưa bật đăng nhập thật</span> — bấm ⚙️ bên dưới để cấu hình 1 lần (5 phút).';
-  if(fbValid(FB)){$('#cfgPanel').classList.add('hide');$('#cfgToggle').classList.add('hide');$('#demoLink').classList.add('hide');}
+  const bar = $('#cfgBar');
+  if (bar) bar.style.display = fbValid(FB) ? 'none' : 'flex';
 }
 function toggleCfg(open){$('#cfgPanel').classList.toggle('hide',!open);}
 async function initCloud(){
