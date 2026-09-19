@@ -1083,9 +1083,14 @@ async function initCloud(){
 }
 function startSession(s){
   session=s;save('keode.session.v1',s);
-  toast('Đăng nhập thành công: '+(s.name||'bạn'));
   if(s.provider!=='demo'&&fbValid(FB)&&MODE!=='cloud'&&!cloudConnecting){cloudConnecting=true;initCloud();}
-  route('onboard');applyRoute();
+  const sameProfile=profile&&(profile.email||'')===(s.email||''); // đã có hồ sơ của chính tài khoản này
+  if(sameProfile){
+    route('discover');applyRoute();
+    toast('Chào lại '+profile.name+'! Vào kèo thôi.');
+  }else{
+    route('onboard');applyRoute(); // lần đầu → onboarding đúng 1 lần
+  }
 }
 
 /* ================= HELPERS ================= */
@@ -2117,10 +2122,9 @@ $('#usermenu').addEventListener('click',e=>{
   if(e.target.closest('#kycMenuBtn')){$('#usermenu').classList.add('hide');openKyc();return;}
   if(!e.target.closest('#logoutBtn'))return;
   if(!confirm('Đăng xuất khỏi KÈO ĐÊ? (kèo đã tạo vẫn giữ trên máy)'))return;
-  session=null;profile=null;
+  session=null;
   if(window.firebase)try{firebase.auth().signOut();}catch(e){}
-  localStorage.removeItem('keode.session.v1');
-  localStorage.removeItem('keode.profile.v1');
+  localStorage.removeItem('keode.session.v1'); // giữ profile — đăng nhập lại vào thẳng web
   $('#usermenu').classList.add('hide');
   route('discover');applyRoute();
   toast('Đã đăng xuất. Hẹn gặp lại!');

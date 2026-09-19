@@ -117,14 +117,10 @@ await page.click('#logoutBtn');
 await page.waitForTimeout(200);
 console.log('logout | login hiện?', await page.locator('#view-login:not(.hide)').count() === 1);
 await page.evaluate(() => localStorage.setItem('keode.session.v1', JSON.stringify({provider:'demo',id:'demo',name:'Lê Hoàng Vũ',email:'',picture:''})));
-await page.evaluate(() => { location.hash = 'onboard'; });
+await page.evaluate(() => { location.hash = 'discover'; });
 await page.reload({ waitUntil: 'networkidle' });
-await page.fill('#obDob', '2004-11-27');
-await page.click('#obNext');
-await page.click('#obDistricts .pchip:nth-child(1)');
-await page.click('#obLikes .pchip:nth-child(1)');
-await page.click('#obDone');
-await page.waitForSelector('#view-app:not(.hide)');
+console.log('login lại | vào thẳng app (không onboarding)?', await page.locator('#view-app:not(.hide)').count() === 1,
+  '| onboarding ẩn?', await page.locator('#view-onboard.hide').count() === 1);
 console.log('login lại | cards =', await page.locator('#feed .kcard').count(), '(kèo cũ còn)');
 
 const hOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
