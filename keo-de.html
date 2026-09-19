@@ -1039,7 +1039,7 @@ const AVCOLORS=['#2E5BE8','#F43F6B','#FFB020','#8B5CF6','#14B8A6','#EC4899','#22
 let FB=window.KEO_FIREBASE_CONFIG||load('keode.firebase.v1',null);
 let session=load('keode.session.v1',null);
 let MODE='local',CLOUD_KEO=[],db=null,cloudConnecting=false,confirmResult=null,venueSeeded=false;
-const ADMIN_UID='mFbMQbKE5jhCR83aYBbSknoHdT42'; // UID admin trong rules — khớp mới có quyền toàn quyền cloud
+const ADMIN_UID='veKx7ZnK0zdqsFqqjMoKQD4pwMW2'; // UID admin trong rules — khớp mới có quyền toàn quyền cloud
 let adminS=load('keode.admin.v1',null);
 function hashStr(s){let x=0x811c9dc5;for(let i=0;i<s.length;i++){x^=s.charCodeAt(i);x=Math.imul(x,0x01000193)>>>0;}let y=0x01000193;for(let i=s.length-1;i>=0;i--){y^=s.charCodeAt(i)+i;y=Math.imul(y,0x85ebca6b)>>>0;}return 'v1.'+x.toString(36)+'.'+y.toString(36);}
 let adminPass=load('keode.adminpass.v1',null)||hashStr('admin123');

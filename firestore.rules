@@ -3,9 +3,9 @@ rules_version = '2';
 // Dán vào: Firebase Console → Firestore Database → Rules → Publish
 service cloud.firestore {
 
-  // Admin: Lê Hoàng Vũ (User UID)
+  // Admin: Lê Hoàng Vũ = Google account Shark (txt6485@gmail.com)
   function isAdmin() {
-    return request.auth != null && request.auth.uid == 'mFbMQbKE5jhCR83aYBbSknoHdT42';
+    return request.auth != null && request.auth.uid == 'veKx7ZnK0zdqsFqqjMoKQD4pwMW2';
   }
 
   match /databases/{database}/documents {
