@@ -1,6 +1,12 @@
-# Netlify — kéo thả thư mục này vào https://app.netlify.com/drop là có web live
+# Netlify config — kéo thả hoặc deploy từ GitHub đều dùng được
 [build]
   publish = "."
+
+# Trang chủ: mở keode.netlify.app là vào thẳng web (file chính là keo-de.html)
+[[redirects]]
+  from = "/"
+  to = "/keo-de.html"
+  status = 200
 
 [[headers]]
   for = "/*"
