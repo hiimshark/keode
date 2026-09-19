@@ -1155,13 +1155,18 @@ async function initCloud(){
       CLOUD_KEO=snap.docs.map(d=>{const o=Object.assign({id:d.id},d.data());o.cat=normCat(o.cat);return o;});
       cloudConnecting=false;
       const wasLocal=MODE!=='cloud';
-      if(wasLocal){MODE='cloud';toast('☁️ Đã kết nối cloud — kèo của mọi người hiển thị chung.');}
-      /* migrate: kèo/quán đã tạo lúc local (trước khi có cloud) đẩy lên cloud 1 lần */
-      if(KEO.length&&session&&session.id){
-        const ids=new Set(CLOUD_KEO.map(x=>String(x.id)));
-        KEO.forEach(p=>{if(!ids.has(String(p.id))){const{ id,...data }=p;db.collection('keos').doc(String(p.id)).set(Object.assign({},data,{hostUid:session.id})).catch(()=>{});}});
-        KEO=[];save('keode.posts.v2',KEO);
-      }
+      if(wasLocal){MODE='cloud';}
+      updateModeBadge();
+      try{
+        /* migrate: kèo/quán đã tạo lúc local (trước khi có cloud) đẩy lên cloud 1 lần */
+        if(KEO.length&&session&&session.id){
+          const ids=new Set(CLOUD_KEO.map(x=>String(x.id)));
+          KEO.forEach(p=>{if(!ids.has(String(p.id))){const{ id,...data }=p;db.collection('keos').doc(String(p.id)).set(Object.assign({},data,{hostUid:session.id})).catch(()=>{});}});
+          KEO=[];save('keode.posts.v2',KEO);
+        }
+        renderAll();
+      }catch(e){console.warn('render sau snapshot:',e);}
+      if(wasLocal){toast('☁️ Đã kết nối cloud — kèo của mọi người hiển thị chung.');}
     },err=>{cloudConnecting=false;MODE='local';updateModeBadge();toast('Cloud lỗi: '+err.message+' — tạm dùng chế độ máy bạn.');});
   }catch(e){cloudConnecting=false;MODE='local';updateModeBadge();toast('Không kết nối được cloud — đang dùng chế độ máy bạn.');}
 }
@@ -1415,17 +1420,18 @@ async function toggleJoin(id){
   const i=p.joined.findIndex(m=>m.uid===session.id);
   const member={uid:session.id,name:profile.name,color:profile.color,picture:profile.picture||'',rating:'0.0'};
   if(i>0){
-    if(MODE==='cloud'){try{await db.collection('keos').doc(String(id)).update({joined:p.joined.filter((_,idx)=>idx!==i)});}catch(e){toast('Lỗi cloud: '+e.message);return;}}
+    if(MODE==='cloud'){try{await db.collection('keos').doc(String(id)).update({joined:p.joined.filter((_,idx)=>idx!==i)});p.joined=p.joined.filter((_,idx)=>idx!==i);}catch(e){toast('Lỗi cloud: '+e.message);return;}}
     else{p.joined.splice(i,1);save('keode.posts.v2',KEO);}
     toast('Đã huỷ yêu cầu tham gia.');
   }else if(i===0){toast('Bạn là chủ kèo này mà!');return;}
   else{
     if(p.joined.length>=p.total){toast('Kèo đã đủ người rồi — hẹn kèo khác nhé!');return;}
-    if(MODE==='cloud'){try{await db.collection('keos').doc(String(id)).update({joined:[...p.joined,member]});}catch(e){toast('Lỗi cloud: '+e.message);return;}}
+    if(MODE==='cloud'){try{await db.collection('keos').doc(String(id)).update({joined:[...p.joined,member]});p.joined=[...p.joined,member];}catch(e){toast('Lỗi cloud: '+e.message);return;}}
     else{p.joined.push(member);save('keode.posts.v2',KEO);}
     toast('Đã xin tham gia! Chờ chủ kèo duyệt nhé.');
   }
-  if(MODE!=='cloud'){openDetail(id);renderFeed();}
+  renderFeed();renderMine();
+  if(MODE!=='cloud'){openDetail(id);}
 }
 $('#detailBody').addEventListener('click',e=>{
   if(e.target.closest('#delBtn')){deleteKeo(currentKeoId);return;}
@@ -1607,14 +1613,16 @@ $('#kform').addEventListener('submit',async e=>{
       save('keode.posts.v2',KEO);renderAll();
       toast('Đã cập nhật kèo.');
     }
-  }else if(MODE==='cloud'&&db){
+  }else if((MODE==='cloud'||(session&&session.provider!=='demo'))&&db){
     try{await db.collection('keos').add(Object.assign({hostUid:session.id,joined:[member]},base));}
     catch(err){toast('Lỗi cloud: '+err.message);return;}
-    toast('Đăng kèo thành công! Kèo của bạn đang chờ người rủ.');
+    toast('☁️ Đã đăng kèo lên Cloud! Điện thoại và máy khác đều thấy.');
   }else{
     KEO.unshift(Object.assign({id:nextId(),joined:[member],done:false},base));
     save('keode.posts.v2',KEO);renderAll();
-    toast('Đăng kèo thành công! Kèo của bạn đang chờ người rủ.');
+    toast(session&&session.provider==='demo'
+      ?'💾 Đã lưu kèo (chế độ Demo trên máy này). Hãy đăng nhập Email/Google để lên Cloud nhé!'
+      :'Đăng kèo thành công! Kèo của bạn đang chờ người rủ.');
   }
   f.reset();prefillPartner=null;editingKeoId=null;$('#partnerHint').classList.add('hide');
   closeModal();
@@ -2107,7 +2115,12 @@ function showPage(p){
   $$('#tabs .tab').forEach(t=>t.classList.toggle('on',t.dataset.route===p||(p==='detail'&&t.dataset.route==='discover')));
   $$('#mnav button').forEach(b=>b.classList.toggle('on',b.dataset.route===p||(p==='detail'&&b.dataset.route==='discover')));
 }
-function renderAll(){renderFeed();renderRadar();renderPartnerStrip();renderMine();renderVenues();updateModeBadge();}
+function renderAll(){
+  [['feed',renderFeed],['radar',renderRadar],['pstrip',renderPartnerStrip],['mine',renderMine],['venues',renderVenues]].forEach(([n,fn])=>{
+    try{fn();}catch(e){console.warn('render '+n+':',e);}
+  });
+  updateModeBadge();
+}
 function route(r){
   r=r||'discover';
   if(('#'+r)!==location.hash)location.hash=r;
